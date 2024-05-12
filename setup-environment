@@ -1,0 +1,20 @@
+Followed offical AWS docs to prepare cdk environment.
+installed node 20.13.1 and npm 10.5.2 for cdk
+
+installed aws-cdk:
+sudo npm install -g aws-cdk
+ cdk --version
+
+python3.11 already installed
+
+prepare virtual environment:
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install aws-cdk.core aws-cdk.aws-eks
+
+cdk ls
+cdk synth
+cdk bootstrap aws://ACCOUNT_ID/REGION
+
+cdk deploy <STACK_NAME>
