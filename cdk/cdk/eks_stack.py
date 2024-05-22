@@ -1,9 +1,10 @@
-from aws_cdk import CfnOutput, Stack
+from aws_cdk import Stack
 from constructs import Construct
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
+import json
 
 class EksStack(Stack):
     def __init__(self, scope: Construct, id: str, vpc, helm_values, **kwargs):
@@ -36,19 +37,19 @@ class EksStack(Stack):
         print("Hey you are in EKS Stack, and helm_values: ")
         print(helm_values)
 
-        # #if helm_values is 1, then add the Nginx Ingress Controller
-        # if self.helm_values == "1":
-        #     # Add the Nginx Ingress Controller
+        #helm_values_dict = json.loads(helm_values)
 
+        # Add the Helm chart to the cluster
         self.cluster.add_helm_chart("NginxIngressController",
             chart="nginx-ingress",
             repository="https://helm.nginx.com/stable",
             namespace="default",
             release="nginx-ingress",
             wait=True,
+            # TODO: Pass the helm_values to the chart from custom resource output.
             values={
                 "controller": {
-                    "replicaCount": helm_values
+                    "replicaCount": 1
                 }
             }
         )
