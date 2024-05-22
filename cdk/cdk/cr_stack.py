@@ -6,11 +6,13 @@ from aws_cdk import (
     aws_ssm as ssm,
     CustomResource,
     CfnOutput,
-    RemovalPolicy
+    RemovalPolicy,
+    CfnParameter
 )
 
 from constructs import Construct
 from os import path
+from datetime import datetime
  
 class CRStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs):
@@ -51,12 +53,28 @@ class CRStack(Stack):
             self,'crProvider',
             on_event_handler= self.lambda_func
         )
-        self.helm_values = CustomResource(self, 'CustomResource', service_token=res_provider.service_token)
+
+        #TODO: Trigger Lambda function for each deployment.
+
+        # Add a deployment time parameter to trigger the custom resource on every deployment
+        # deployment_time = CfnParameter(
+        #     self, "DeploymentTime",
+        #     type="String",
+        #     description="It is a timestamp value which shows the deployment time. Used to rotate sources.",
+        #     default=datetime.now().strftime('%Y%m-%d%H-%M%S-') # Generates a unique value every deployment
+        # )
+
+        # Create Custom Resource
+        self.helm_values = CustomResource(self, 'CustomResource', 
+            service_token=res_provider.service_token
+            # properties={
+            # "DeploymentTime": deployment_time.value_as_string
+            # }
+        )
+
         # apply removal policy to the custom resource
         self.helm_values.apply_removal_policy(RemovalPolicy.DESTROY)
 
         # Output the Lambda function ARN to be used in the CustomResource in CRStack as service token
         CfnOutput(self, "LambdaFunctionArn", value=self.lambda_func.function_arn)
         CfnOutput(self, "HelmValues", value=self.helm_values.get_att_string("helm_values"))
-
-        #TODO: Trigger Lambda function for each deployment.
