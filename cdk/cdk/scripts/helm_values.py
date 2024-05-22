@@ -17,13 +17,18 @@ def handler(event, context):
             replica_count = 2
         else:
             raise ValueError(f"Unexpected environment value: {env_value}")
-
+        
+        helm_values = {
+            "controller": {
+                "replicaCount": replica_count
+            }
+        }
         
         # Return the values for use in the CustomResource output
         return {
             'Status': 'SUCCESS',
             'PhysicalResourceId': context.log_stream_name,
-            'Data': {'helm_values': replica_count}
+            'Data': {'helm_values': json.dumps(helm_values)}
         }
     except Exception as e:
         return {
@@ -31,4 +36,3 @@ def handler(event, context):
             'PhysicalResourceId': context.log_stream_name,
             'Data': {'Error': str(e)}
         }
-# be sure this output can be consumed by the CustomResource in CRStack and notified to CloudFormation
